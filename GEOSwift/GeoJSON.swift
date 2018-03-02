@@ -290,8 +290,13 @@ private func GEOJSONGeometryFromDictionaryRepresentation(_ dictionary: Dictionar
 }
 
 private func GEOJSONCoordinatesFromArrayRepresentation(_ array: [[Double]]) -> [Coordinate]? {
-    return array.map {
-        coordinatePair in
+    
+    //It's possible to have empty arrays in valid GeoJSON objects so we need to check at least for this case assuming that if we have data in array then it will be correctly formatted.
+    
+    guard let first = array.first, !first.isEmpty else {
+        return nil
+    }
+    return array.map { coordinatePair in
         return Coordinate(x: coordinatePair[0], y: coordinatePair[1])
     }
 }
