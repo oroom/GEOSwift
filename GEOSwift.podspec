@@ -19,5 +19,8 @@ DESC
 
   s.source_files = "GEOSwift/*.{swift,h}"
   s.dependency "geos", "3.5.0"
-
+  s.xcconfig = {
+    'CLANG_CXX_LANGUAGE_STANDARD' => 'gnu++11',
+    'CLANG_CXX_LIBRARY' => 'libc++',
+  }
 end
