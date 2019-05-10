@@ -1,7 +1,10 @@
-![GEOSwift](/README-images/GEOSwift-header.png)  
+![GEOSwift](/README-images/GEOSwift-header.png)
 
-[![Build Status](https://travis-ci.org/GEOSwift/GEOSwift.svg?branch=develop)](https://travis-ci.org/GEOSwift/GEOSwift.svg?branch=develop)
 [![CocoaPods Compatible](https://img.shields.io/cocoapods/v/GEOSwift.svg)](https://img.shields.io/cocoapods/v/GEOSwift.svg)
+[![Carthage Compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
+[![Platform](https://img.shields.io/cocoapods/p/GEOSwift.svg?style=flat)](https://github.com/GEOSwift/GEOSwift)
+[![Build Status](https://travis-ci.org/GEOSwift/GEOSwift.svg?branch=develop)](https://travis-ci.org/GEOSwift/GEOSwift.svg?branch=develop)
+[![codecov](https://codecov.io/gh/GEOSwift/GEOSwift/branch/develop/graph/badge.svg)](https://codecov.io/gh/GEOSwift/GEOSwift)
 
 Easily handle a geographical object model (points, linestrings, polygons etc.) and related topographical operations (intersections, overlapping etc.).  
 A type-safe, MIT-licensed Swift interface to the OSGeo's GEOS library routines, nicely integrated with MapKit and Quicklook.
@@ -19,10 +22,89 @@ A type-safe, MIT-licensed Swift interface to the OSGeo's GEOS library routines, 
 
 ## Requirements
 
-* iOS 8.0+ / Mac OS X 10.10+
-* Xcode 9
-* Swift 4 (For Swift 3 support use release 1.0.2 or earlier.)
-* CocoaPods 1.0.1+
+* iOS 8.0+
+* Xcode 10.2
+* Swift 5.0
+* CocoaPods 1.4.0+ or Carthage (if developing for iOS)
+* Swift Package Manager 5.0 (if developing Linux/Mac binaries)
+
+## Installation
+
+### CocoaPods
+
+1. Install autotools: `$ brew install autoconf automake libtool`
+2. Update your `Podfile` to include:
+
+```
+use_frameworks!
+pod 'GEOSwift'
+```
+
+3. Run `$ pod install`
+
+> GEOS is a configure/install project licensed under LGPL 2.1: it is difficult to build for iOS and its compatibility with static linking is at least controversial. Use of GEOSwift without dynamic-framework-based CocoaPods and with a project targeting iOS 7, even if possible, is advised against.
+
+### Carthage
+
+1. Install autotools: `$ brew install autoconf automake libtool`
+2. Add the following to your Cartfile:
+
+```
+github "GEOSwift/GEOSwift" ~> 4.1.0
+```
+
+3. Finish updating your project by following the [typical Carthage
+workflow](https://github.com/Carthage/Carthage#quick-start).
+
+### Swift Package Manager
+
+SPM's [System Library Targets](https://github.com/apple/swift-evolution/blob/master/proposals/0208-package-manager-system-library-targets.md) allows linking against any library installed on the machine.
+
+1. Ensure that the geos package is installed on your machine. For Mac, Homebrew is suggested: `$ brew install geos`
+2. Update `Package.swift` to include GEOSwift as a dependency:
+
+```swift
+// swift-tools-version:5.0
+let package = Package(
+  name: "your-package-name",
+  dependencies: [
+    .package(url: "https://github.com/GEOSwift/GEOSwift.git", from: "x.x.x") // Reccommend latest release version, e.g. "3.1.0"
+  ],
+  targets: [
+    .target("your-target-name", dependencies: ["GEOSwift"])
+  ]
+)
+```
+
+3.  Ensure that your system has a pkg-config file available for `libgeos_c`:
+```
+$ pkg-config --validate geos_c
+```
+> NOTE: Homebrew's current version of geos does not seem to generate a `.pc` file on install.  See the next section for options.
+
+#### Providing geos_c library location under Homebrew
+
+Because Homebrew does not generate a pkg-config file for geos, one is provided in this repository: [geos_c.pc](CLibGeosC/geos_c.pc).  You can choose to install it manually, amend your PKG_CONFIG_PATH, or provide the search paths to swiftc by hand.
+
+* Option 1: Copy the sample pkg-config file to your system:
+```
+$ cp CLibGeosC/geos_c.pc /usr/local/lib/pkgconfig/
+$ pkg-config --validate geos_c # should return 0
+```
+
+* Option 2: Amend the PKG_CONFIG_PATH to allow pkg-config to find the configuration file:
+```
+$ export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/path/to/GEOSwift/CLibGeosC
+$ pkg-config --validate geos_c # should succeed with no error
+```
+
+* Option 3: Pass the homebrew paths for geos to swift build every time (you may want to put this into a Makefile):
+```
+$ swift build -Xlinker \
+              -L$(brew --prefix geos)/lib \
+              -Xcc \
+              -I$(brew --prefix geos)/include
+```
 
 ## Usage
 
@@ -99,34 +181,23 @@ GEOSwift let you perform a set of operations on these two geometries:
 * _overlaps_: returns true if this geometric object “spatially overlaps” another geometry.
 * _relate_: returns true if this geometric object is spatially related to another geometry by testing for intersections between the interior, boundary and exterior of the two geometric objects as specified by the values in the intersectionPatternMatrix.
 
-
 ### Playground
 
 Explore more, interactively, from the Xcode project’s playground. It can be found inside `GEOSwift` workspace. Open the workspace on Xcode, build the `GEOSwift` framework and open the playground file.
 
 ![Playground](/README-images/playground.png)
 
-## Installation
+## Contributing
 
-> **Embedded frameworks require a minimum deployment target of iOS 8 or OS X Mavericks.**
-> GEOS is a configure/install project licensed under LGPL 2.1: it is difficult to build for iOS and its compatibility with static linking is at least controversial. Use of GEOSwift without CocoaPods and with a project targeting iOS 7, even if possible, is advised against.
+To make a contribution:
 
-### CocoaPods
-
-CocoaPods is a dependency manager for Cocoa projects. To install GEOSwift with CocoaPods:
-
-* Make sure CocoaPods is installed (GEOSwift requires version 0.39.0 or greater).
-
-* Update your `Podfile` to include the following:
-
-```
-use_frameworks!
-pod 'GEOSwift'
-```
-
-* Run `pod install`.
-
-NOTE: running `pod install` may cause some errors if your machine does not have autoconf, automake and glibtool, if you encounter those errors you can run `brew install autoconf automake libtool` to install those packages and run again `pod install`.
+* Fork the repo
+* Start from the develop branch and create a branch with a name that describes your contribution
+* Run `$ carthage update`
+* Sign in to travis-ci.org (if you've never signed in before, CI won't run to verify your pull request)
+* Push your branch and create a pull request to develop
+* One of the maintainers will review your code and may request changes
+* If your pull request is accepted, one of the maintainers should update the changelog before merging it
 
 ## Creator
 
